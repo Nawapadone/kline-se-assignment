@@ -1,0 +1,164 @@
+/*
+ * Everything the provided th-bank.css does not cover. Kept separate so the
+ * team's stylesheet stays byte-for-byte as delivered.
+ */
+
+/* --- Phone framing -------------------------------------------------------
+ * th-bank.css targets a phone and stops at 474px, so a desktop would stretch
+ * the screens edge to edge. design.jpg shows all three inside phone outlines.
+ */
+.phone-frame {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 100vh;
+	background: #e9ecf1;
+}
+
+.phone-frame__screen {
+	display: flex;
+	position: relative;
+	overflow: hidden;
+	width: 100%;
+	max-width: 414px;
+	height: 100vh;
+	max-height: 896px;
+	background: #fff;
+}
+
+@media screen and (min-width: 475px) {
+	.phone-frame__screen {
+		border-radius: 28px;
+		box-shadow: 0 18px 50px rgba(0, 0, 0, .18);
+	}
+}
+
+/* --- Avatar fallback -----------------------------------------------------
+ * th-bank.css fills these circles with img/common/bg_profile.png and
+ * bg_logo.png, neither of which ships in the provided resources, so an icon
+ * stands in when the remote photo cannot be loaded either.
+ */
+.avatar__fallback {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 55%;
+	height: 55%;
+	transform: translate(-50%, -50%);
+	color: #fff;
+	opacity: .85;
+}
+
+/* The error message is pulled over the name's slot by th-bank.css, so the name
+ * keeps its space and only stops being drawn. */
+.pin__name.is-hidden {
+	visibility: hidden;
+}
+
+/* The PIN screen is solid #24c875, where the default grey text and the green
+ * loader would both be unreadable. */
+.pin .notice__msg {
+	color: #fff;
+}
+
+.pin .notice__action {
+	background: #fff;
+	color: #24c875;
+}
+
+.pin .loader {
+	--_g: no-repeat radial-gradient(farthest-side, #fff 94%, #ffffff00);
+}
+
+/* --- Keypad press feedback -----------------------------------------------
+ * `.pin__key:before` ships with opacity 0 and no :active rule, so the press
+ * highlight has to be driven from script (PinKeypad flashes `is-pressed`).
+ */
+.pin__key.is-pressed:before {
+	opacity: .15;
+}
+
+.pin__key:disabled {
+	opacity: .4;
+}
+
+/* --- Debit card strip ----------------------------------------------------
+ * The items are inline-block, so without this the row wraps instead of
+ * scrolling. bank_main.html solved it with a hardcoded width:1595px, which
+ * breaks as soon as the number of cards changes.
+ */
+.debit-swipe__lst {
+	white-space: nowrap;
+}
+
+/* --- Floating bubbles ----------------------------------------------------
+ * th-bank.css positions `.tooltip--right-under`'s arrow but never the bubble
+ * itself, which would otherwise land at its static position in the card.
+ */
+.main-acc .tooltip--right-under {
+	top: 56px;
+}
+
+.app-toast {
+	left: 50%;
+	bottom: 32px;
+	transform: translateX(-50%);
+	text-align: center;
+}
+
+/* --- Waiting, failed and empty -------------------------------------------
+ * The provided markup covers none of these, and an ApiError is pointless if
+ * nothing on screen can show it.
+ */
+.loading-block {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin: auto;
+	padding: 48px 0;
+}
+
+.notice {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 16px;
+	margin: auto;
+	padding: 32px 24px;
+	text-align: center;
+}
+
+/* One section failed while the rest of the screen arrived. */
+.notice--inline {
+	gap: 10px;
+	margin: 0 0 10px;
+	padding: 18px 16px;
+	border-radius: 10px;
+	background: #f2f3f7;
+}
+
+.notice__msg {
+	font-size: 1.5rem;
+	line-height: 2.2rem;
+	color: #555;
+}
+
+.notice--inline .notice__msg {
+	font-size: 1.3rem;
+	line-height: 1.8rem;
+}
+
+.notice__action {
+	padding: 10px 24px;
+	border-radius: 22px;
+	background: #24c875;
+	font-size: 1.4rem;
+	font-weight: 700;
+	color: #fff;
+}
+
+.notice--inline .notice__action {
+	padding: 7px 18px;
+	font-size: 1.2rem;
+}

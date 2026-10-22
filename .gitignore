@@ -1,0 +1,19 @@
+node_modules
+dist
+dist-ssr
+*.local
+.env
+.env.*
+!.env.example
+.DS_Store
+storybook-static
+
+# Assignment brief and the resources the team provided — inputs, not deliverables.
+# The parts the app needs (th-bank.css, img/) are vendored under src/.
+FRONTEND_ASSIGNMENT/
+ASSIGNMENT.md
+ASSIGNMENT-TH.md
+
+# Playwright
+test-results
+playwright-report
