@@ -34,6 +34,35 @@ bun run lint         # oxlint
 
 Every one of these runs on push in `.github/workflows/ci.yml`.
 
+### Docker
+
+```bash
+docker compose up --build      # http://localhost:8080
+```
+
+Or without compose:
+
+```bash
+docker build -t kline-frontend .
+docker run --rm -p 8080:80 kline-frontend
+```
+
+The image is built in two stages: bun installs and runs `bun run build`, which
+is `tsc -b && vite build`, so a type error fails the build; the second stage is
+nginx with only `dist/` copied in, so neither bun nor `node_modules` nor the
+sources ship. `docker/nginx.conf` returns `index.html` for unmatched paths —
+without that, reloading on `/pin` or `/main` would 404 — and caches the
+fingerprinted files in `/assets/` while keeping `index.html` fresh.
+
+Vite inlines `VITE_*` at build time, so configuration is **build arguments**,
+not runtime environment. A different setting means a different image:
+
+```bash
+docker build --build-arg VITE_USE_MOCK=false \
+             --build-arg VITE_API_BASE_URL=https://api.example.com \
+             -t kline-frontend .
+```
+
 The end-to-end suite needs a browser once: `bunx playwright install chromium`.
 
 Configuration is optional — every variable has a working default. Copy

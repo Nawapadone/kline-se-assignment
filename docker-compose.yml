@@ -1,0 +1,14 @@
+services:
+  web:
+    build:
+      context: .
+      args:
+        # Serve the bundled fixtures: this project ships no backend. Point
+        # VITE_API_BASE_URL at one and set VITE_USE_MOCK=false to use it, and
+        # rebuild — Vite bakes these in.
+        VITE_USE_MOCK: "true"
+        VITE_API_BASE_URL: ""
+        VITE_DEMO_PIN: "123456"
+    ports:
+      - "8080:80"
+    restart: unless-stopped

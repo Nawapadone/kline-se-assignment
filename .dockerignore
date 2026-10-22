@@ -1,0 +1,23 @@
+# Build inputs only — everything here either bloats the context or would change
+# what gets built.
+node_modules
+dist
+storybook-static
+.git
+.github
+
+# Vite reads .env at build time, which would silently override the build args.
+.env
+.env.*
+!.env.example
+
+# The team's brief and resources: inputs to the work, not to the image.
+FRONTEND_ASSIGNMENT
+ASSIGNMENT.md
+ASSIGNMENT-TH.md
+
+# Test output and local noise
+playwright-report
+test-results
+.DS_Store
+*.log
