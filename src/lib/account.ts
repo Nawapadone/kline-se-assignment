@@ -1,18 +1,5 @@
-import type { Account, AccountType } from '@/types'
-
-/** Fallback titles for accounts the API serves without a `name`. */
-const TYPE_LABEL: Record<AccountType, string> = {
-  'saving-account': 'Saving Account',
-  'credit-loan': 'Credit Loan',
-  'goal-saving-account': 'Goal Saving Account',
-}
-
-/** The product line printed above the account number on every card. */
-const TYPE_PRODUCT: Record<AccountType, string> = {
-  'saving-account': 'Smart account',
-  'credit-loan': 'Credit Loan',
-  'goal-saving-account': 'Goal driven savings',
-}
+import { t } from '@/i18n'
+import type { Account } from '@/types'
 
 /** The flag that turns a loan from "draw it down" into "pay it back". */
 const OVERDUE_FLAG = 'Overdue'
@@ -26,12 +13,15 @@ export type AccountAction = 'money' | 'disburse' | 'pay'
  * when the payload carries one, and a type label covers a backend that sends none.
  */
 export function accountTitle(account: Account): string {
-  return account.name ?? TYPE_LABEL[account.type]
+  return account.name ?? t(`account.title.${account.type}`)
 }
 
 /** `Smart account 568-2-81740-9` — the product name followed by the account number. */
 export function accountNumberLine(account: Account): string {
-  return `${TYPE_PRODUCT[account.type]} ${account.accountNumber}`
+  return t('account.numberLine', {
+    product: t(`account.product.${account.type}`),
+    number: account.accountNumber,
+  })
 }
 
 /**
@@ -39,7 +29,7 @@ export function accountNumberLine(account: Account): string {
  * bank_main.html, where only the Credit Loan cards omit "Powered by".
  */
 export function accountIssuerLine(account: Account): string | null {
-  return account.type === 'credit-loan' ? null : `Powered by ${account.issuer}`
+  return account.type === 'credit-loan' ? null : t('account.poweredBy', { issuer: account.issuer })
 }
 
 /**

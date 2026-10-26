@@ -24,8 +24,8 @@ The demo PIN is **123456**. Mock data is served from `src/api/mock/data`, so no
 backend is needed.
 
 ```bash
-bun run test         # unit tests (63)
-bun run test:e2e     # Playwright end-to-end (42), starts the servers itself
+bun run test         # unit tests (183)
+bun run test:e2e     # Playwright end-to-end (53), starts the servers itself
 bun run typecheck    # tsc --build
 bun run build        # production build into dist/
 bun run storybook    # component explorer and interaction tests on :6006
@@ -63,6 +63,13 @@ docker build --build-arg VITE_USE_MOCK=false \
              -t kline-frontend .
 ```
 
+The UI ships in English and Thai; `VITE_LOCALE=th` builds the Thai one:
+
+```bash
+docker build --build-arg VITE_LOCALE=th -t kline-frontend:th .
+VITE_LOCALE=th bun run dev
+```
+
 The end-to-end suite needs a browser once: `bunx playwright install chromium`.
 
 Configuration is optional — every variable has a working default. Copy
@@ -81,6 +88,7 @@ src/
 │   └── mock/
 │       ├── client.ts       #   MockApiClient: fixtures, latency, attempt counting
 │       └── data/*.json     #   responses copied from api-specs.md
+├── i18n/                   # en/th dictionaries and t(); locale fixed per build
 ├── lib/                    # business logic, no React, unit-tested
 │   ├── account.ts          #   titles, product lines, actions, main-account moves
 │   ├── card.ts             #   card-number masking, status labels

@@ -1,3 +1,4 @@
+import { t } from '@/i18n'
 import { formatCardStatus, isCardActive, maskCardNumber } from '@/lib/card'
 import type { DebitCard } from '@/types'
 
@@ -31,7 +32,7 @@ export function DebitCardItem({ card }: DebitCardItemProps) {
         className="debit-swipe__issue"
         style={card.borderColor ? { color: '#d3d3d2' } : undefined}
       >
-        Issued by {card.issuer}
+        {t('card.issuedBy', { issuer: card.issuer })}
       </span>
     </a>
   )

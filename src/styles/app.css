@@ -162,3 +162,13 @@
 	padding: 7px 18px;
 	font-size: 1.2rem;
 }
+
+/* A message's own `\n` is where the translation breaks the line. */
+.tooltip__txt--lines {
+	white-space: pre-line;
+}
+
+/* th-bank.css sets `break-all`, which splits Thai between any two characters. */
+:lang(th) .pin__dsc {
+	word-break: normal;
+}

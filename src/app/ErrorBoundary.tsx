@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { Notice } from '@/components/Notice'
+import { t } from '@/i18n'
 
 interface Props {
   children: ReactNode
@@ -30,8 +31,8 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="wrap">
           <Notice
-            message="Something went wrong. Please reload the app."
-            actionLabel="Reload"
+            message={t('error.boundary')}
+            actionLabel={t('common.reload')}
             onAction={() => window.location.reload()}
           />
         </div>

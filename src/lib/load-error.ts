@@ -1,4 +1,5 @@
 import { ApiError } from '@/api'
+import { t } from '@/i18n'
 
 /**
  * Turns whatever a client rejected with into a line a screen can show. Status is
@@ -7,10 +8,10 @@ import { ApiError } from '@/api'
  */
 export function toErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
-    if (error.status === 404) return 'This service is not available yet.'
-    if (error.status >= 500) return 'The server is having trouble. Please try again.'
-    return 'We could not load your data. Please try again.'
+    if (error.status === 404) return t('error.notAvailable')
+    if (error.status >= 500) return t('error.server')
+    return t('error.loadFailed')
   }
-  if (error instanceof TypeError) return 'No connection. Check your network and try again.'
-  return 'Something went wrong. Please try again.'
+  if (error instanceof TypeError) return t('error.offline')
+  return t('error.generic')
 }

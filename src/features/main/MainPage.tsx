@@ -7,6 +7,7 @@ import { MainAccountCard } from '@/components/MainAccountCard'
 import { Notice } from '@/components/Notice'
 import { RecentContacts } from '@/components/RecentContacts'
 import { SecondaryAccountCard } from '@/components/SecondaryAccountCard'
+import { t } from '@/i18n'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { selectMainAccountEntry, selectSecondaryEntries } from '@/store/selectors'
 import {
@@ -93,15 +94,15 @@ export function MainPage() {
    */
   const renderBody = () => {
     if (accountsStatus === 'failed' && accountsError) {
-      return <Notice message={accountsError} actionLabel="Try again" onAction={loadAccounts} />
+      return <Notice message={accountsError} actionLabel={t('common.tryAgain')} onAction={loadAccounts} />
     }
 
     if (accountsStatus === 'idle' || accountsStatus === 'loading') {
-      return <Loading label="Loading your accounts" />
+      return <Loading label={t('main.loadingAccounts')} />
     }
 
     if (accountCount === 0) {
-      return <Notice message="You have no accounts yet." />
+      return <Notice message={t('main.noAccounts')} />
     }
 
     return (
@@ -132,7 +133,7 @@ export function MainPage() {
                   <DebitCardItem key={`${card.name}-${index}`} card={card} />
                 ))}
                 <a href="#" className="debit-swipe__item debit-swipe__item--all">
-                  See all
+                  {t('main.seeAll')}
                 </a>
               </div>
             </div>
@@ -148,7 +149,7 @@ export function MainPage() {
           <Notice
             variant="inline"
             message={dashboardError}
-            actionLabel="Reload"
+            actionLabel={t('common.reload')}
             onAction={loadDashboard}
           />
         )}
@@ -174,7 +175,7 @@ export function MainPage() {
 
         <div className="main-tb">
           <a href="#" className="link-to">
-            Total Balance
+            {t('main.totalBalance')}
           </a>
         </div>
       </div>
@@ -185,10 +186,10 @@ export function MainPage() {
     <div className="wrap">
       <header className="header">
         <a href="#" className="header__lft header__menu">
-          <span className="blind">Menu</span>
+          <span className="blind">{t('main.menu')}</span>
         </a>
         <button type="button" className="header__rgt header__cxl" onClick={signOut}>
-          <span className="blind">Cancel</span>
+          <span className="blind">{t('main.cancel')}</span>
         </button>
       </header>
 

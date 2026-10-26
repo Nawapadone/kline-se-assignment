@@ -1,3 +1,5 @@
+import { t } from '@/i18n'
+
 interface AccountMenuProps {
   isOpen: boolean
   /** Absent on the account that is already main — there is nothing to promote. */
@@ -24,14 +26,14 @@ export function AccountMenu({
     <div className={className} style={{ display: isOpen ? 'block' : 'none' }}>
       {onSetMainAccount && (
         <button type="button" className="tooltip__btn-more" onClick={onSetMainAccount}>
-          Set main account
+          {t('account.setMain')}
         </button>
       )}
       <button type="button" className="tooltip__btn-more" onClick={onCopyAccountNumber}>
-        Copy account number
+        {t('account.copyNumber')}
       </button>
       <button type="button" className="tooltip__btn-more" disabled>
-        Edit Name and Color
+        {t('account.editNameColor')}
       </button>
     </div>
   )

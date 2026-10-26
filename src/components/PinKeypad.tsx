@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { t } from '@/i18n'
 
 const DIGITS = ['1', '2', '3', '4', '5', '6', '7', '8', '9'] as const
 const DELETE_KEY = 'delete'
@@ -89,7 +90,7 @@ export function PinKeypad({ onDigit, onDelete, disabled = false }: PinKeypadProp
         onPointerDown={() => flash(DELETE_KEY)}
         onClick={onDelete}
       >
-        <span className="blind">Delete</span>
+        <span className="blind">{t('pin.delete')}</span>
       </button>
     </div>
   )

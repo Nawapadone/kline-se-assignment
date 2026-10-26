@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Notice } from '@/components/Notice'
+import { t } from '@/i18n'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { fetchUser } from '@/store/slices/userSlice'
 
@@ -41,9 +42,9 @@ export function SplashPage() {
     <div className="wrap">
       <div className="splash">
         {status === 'failed' && error ? (
-          <Notice message={error} actionLabel="Try again" onAction={retry} />
+          <Notice message={error} actionLabel={t('common.tryAgain')} onAction={retry} />
         ) : (
-          <div className="loader" role="status" aria-label="Loading" />
+          <div className="loader" role="status" aria-label={t('common.loading')} />
         )}
       </div>
     </div>

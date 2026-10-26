@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { t } from '@/i18n'
 
 const FEEDBACK_MS = 1800
 
@@ -24,9 +25,9 @@ export function useCopyAccountNumber() {
     async (accountNumber: string) => {
       try {
         await navigator.clipboard.writeText(accountNumber)
-        announce('Account number copied')
+        announce(t('main.copied'))
       } catch {
-        announce('Could not copy the account number')
+        announce(t('main.copyFailed'))
       }
     },
     [announce],

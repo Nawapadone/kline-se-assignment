@@ -1,0 +1,60 @@
+import type { en } from './en'
+
+/** `satisfies` fails the build on a missing or an extra key. */
+export const th = {
+  'common.tryAgain': 'ลองอีกครั้ง',
+  'common.reload': 'โหลดใหม่',
+  'common.loading': 'กำลังโหลด',
+
+  'error.boundary': 'เกิดข้อผิดพลาด กรุณาโหลดแอปใหม่',
+  'error.generic': 'เกิดข้อผิดพลาด กรุณาลองอีกครั้ง',
+  'error.notAvailable': 'บริการนี้ยังไม่เปิดให้ใช้งาน',
+  'error.server': 'ระบบขัดข้องชั่วคราว กรุณาลองอีกครั้ง',
+  'error.loadFailed': 'ไม่สามารถโหลดข้อมูลได้ กรุณาลองอีกครั้ง',
+  'error.offline': 'ไม่มีการเชื่อมต่อ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองอีกครั้ง',
+
+  'pin.locked.title': 'รหัส PIN ของคุณถูกล็อก',
+  'pin.locked.detail': 'กรุณาติดต่อคอลเซ็นเตอร์เพื่อปลดล็อก',
+  'pin.cooldown.title': 'ใส่รหัสผิดเกินจำนวนครั้งที่กำหนด',
+  'pin.cooldown.detail': 'ลองใหม่ได้ในอีก {time}',
+  'pin.invalid.title': 'รหัส PIN ไม่ถูกต้อง',
+  // CLDR gives Thai only the `other` plural category; `one` exists to keep the key set uniform.
+  'pin.attemptsLeft.one': 'เหลืออีก {count} ครั้ง',
+  'pin.attemptsLeft.other': 'เหลืออีก {count} ครั้ง',
+  'pin.verifyFailed.title': 'ไม่สามารถตรวจสอบรหัส PIN ได้',
+  'pin.verifyFailed.detail': 'กรุณาลองอีกครั้ง',
+  'pin.loginWithPassword': 'เข้าสู่ระบบด้วย ID / รหัสผ่าน',
+  'pin.poweredBy': 'ให้บริการโดย TestLab',
+  'pin.delete': 'ลบ',
+  'pin.dotsLabel': 'ใส่แล้ว {filled} จาก {total} หลัก',
+
+  'main.loadingAccounts': 'กำลังโหลดบัญชีของคุณ',
+  'main.noAccounts': 'คุณยังไม่มีบัญชี',
+  'main.seeAll': 'ดูทั้งหมด',
+  'main.totalBalance': 'ยอดเงินรวม',
+  'main.menu': 'เมนู',
+  'main.cancel': 'ยกเลิก',
+  'main.copied': 'คัดลอกเลขที่บัญชีแล้ว',
+  'main.copyFailed': 'ไม่สามารถคัดลอกเลขที่บัญชีได้',
+  'main.coachMark': 'เปลี่ยนบัญชีหลักของคุณ\nเพื่อโอนเงินและใช้ Wallet ได้ง่ายขึ้น',
+
+  'account.title.saving-account': 'บัญชีออมทรัพย์',
+  'account.title.credit-loan': 'สินเชื่อ',
+  'account.title.goal-saving-account': 'บัญชีออมเพื่อเป้าหมาย',
+  'account.product.saving-account': 'บัญชีสมาร์ท',
+  'account.product.credit-loan': 'สินเชื่อ',
+  'account.product.goal-saving-account': 'ออมตามเป้าหมาย',
+  'account.numberLine': '{product} {number}',
+  'account.poweredBy': 'ให้บริการโดย {issuer}',
+  'account.moreAction': 'การทำรายการเพิ่มเติม',
+  'account.withdrawal': 'ถอนเงิน',
+  'account.qrScan': 'สแกน QR',
+  'account.addMoney': 'เติมเงิน',
+  'account.disburse': 'เบิกเงิน',
+  'account.pay': 'ชำระเงิน',
+  'account.setMain': 'ตั้งเป็นบัญชีหลัก',
+  'account.copyNumber': 'คัดลอกเลขที่บัญชี',
+  'account.editNameColor': 'แก้ไขชื่อและสี',
+
+  'card.issuedBy': 'ออกโดย {issuer}',
+} satisfies Record<keyof typeof en, string>

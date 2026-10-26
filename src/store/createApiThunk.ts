@@ -1,8 +1,13 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
+import { t } from '@/i18n'
 import { toErrorMessage } from '@/lib/load-error'
 
-/** Shown when a rejection somehow arrives without a classified message. */
-export const GENERIC_ERROR = 'Something went wrong. Please try again.'
+/**
+ * Shown when a rejection somehow arrives without a classified message. Slices
+ * store finished strings, which holds only because the locale is fixed per
+ * build — a runtime language switch would need keys in state instead.
+ */
+export const GENERIC_ERROR = t('error.generic')
 
 /**
  * createAsyncThunk serialises a rejection, so by the time a reducer reads

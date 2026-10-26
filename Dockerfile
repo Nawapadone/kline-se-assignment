@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1
 
 # ---- build ------------------------------------------------------------------
-# Vite inlines VITE_* variables at build time, so the data source and the demo
-# PIN are build arguments, not runtime environment. A different setting means a
-# different image.
+# Vite inlines VITE_* variables at build time, so the data source, the demo PIN
+# and the UI language are build arguments, not runtime environment. A different
+# setting means a different image.
 FROM oven/bun:1.3.14-alpine AS build
 
 WORKDIR /app
@@ -17,9 +17,11 @@ COPY . .
 ARG VITE_USE_MOCK=true
 ARG VITE_API_BASE_URL=""
 ARG VITE_DEMO_PIN=123456
+ARG VITE_LOCALE=en
 ENV VITE_USE_MOCK=$VITE_USE_MOCK \
     VITE_API_BASE_URL=$VITE_API_BASE_URL \
-    VITE_DEMO_PIN=$VITE_DEMO_PIN
+    VITE_DEMO_PIN=$VITE_DEMO_PIN \
+    VITE_LOCALE=$VITE_LOCALE
 
 # `build` is `tsc -b && vite build`, so a type error fails the image.
 RUN bun run build

@@ -1,3 +1,4 @@
+import { t } from '@/i18n'
 import { accountIssuerLine, accountNumberLine, accountTitle } from '@/lib/account'
 import { formatAmount } from '@/lib/money'
 import type { Account } from '@/types'
@@ -52,20 +53,20 @@ export function MainAccountCard({
         <div className="main-acc__link__box" style={{ backgroundColor: account.color }}>
           <div className="main-acc__link__item">
             <a href="#" className="main-acc__link main-acc__link--withdrawal">
-              Withdrawal
+              {t('account.withdrawal')}
             </a>
             <a href="#" className="main-acc__link main-acc__link--qr">
-              QR scan
+              {t('account.qrScan')}
             </a>
             <a href="#" className="main-acc__link main-acc__link--addmoney">
-              Add money
+              {t('account.addMoney')}
             </a>
           </div>
         </div>
       </div>
 
       <button type="button" className="main-acc__more" onClick={onToggleMenu}>
-        <span className="blind">More Action</span>
+        <span className="blind">{t('account.moreAction')}</span>
       </button>
       <AccountMenu isOpen={isMenuOpen} onCopyAccountNumber={onCopyAccountNumber} />
 
@@ -74,10 +75,7 @@ export function MainAccountCard({
           className="tooltip tooltip--bubble tooltip--right-under"
           style={{ display: 'block' }}
         >
-          <span className="tooltip__txt">
-            Change your main account for <br />
-            Using transfer, Wallet more easliy
-          </span>
+          <span className="tooltip__txt tooltip__txt--lines">{t('main.coachMark')}</span>
         </div>
       )}
     </div>

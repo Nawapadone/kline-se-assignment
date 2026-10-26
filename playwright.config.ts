@@ -38,14 +38,14 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,
       /** Pinned, so a developer's local .env cannot decide what the suite tests. */
-      env: { VITE_USE_MOCK: 'true', VITE_DEMO_PIN: CORRECT_PIN },
+      env: { VITE_USE_MOCK: 'true', VITE_DEMO_PIN: CORRECT_PIN, VITE_LOCALE: 'en' },
     },
     {
       command: `bun run dev --port ${NO_BACKEND_PORT}`,
       url: noBackendURL,
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,
-      env: { VITE_USE_MOCK: 'false', VITE_API_BASE_URL: API_ORIGIN, VITE_DEMO_PIN: CORRECT_PIN },
+      env: { VITE_USE_MOCK: 'false', VITE_API_BASE_URL: API_ORIGIN, VITE_DEMO_PIN: CORRECT_PIN, VITE_LOCALE: 'en' },
     },
   ],
 })

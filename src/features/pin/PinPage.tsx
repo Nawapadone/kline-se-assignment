@@ -5,6 +5,7 @@ import { Loading } from '@/components/Loading'
 import { Notice } from '@/components/Notice'
 import { PinDots } from '@/components/PinDots'
 import { PinKeypad } from '@/components/PinKeypad'
+import { t } from '@/i18n'
 import { isPinComplete, pinErrorLines } from '@/lib/pin'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { selectIsPinBlocked, selectShowPinError } from '@/store/selectors'
@@ -79,7 +80,7 @@ export function PinPage() {
   if (userStatus === 'failed' && userError) {
     return (
       <PinScreen>
-        <Notice message={userError} actionLabel="Try again" onAction={retryUser} />
+        <Notice message={userError} actionLabel={t('common.tryAgain')} onAction={retryUser} />
       </PinScreen>
     )
   }
@@ -87,7 +88,7 @@ export function PinPage() {
   if (userStatus === 'idle' || userStatus === 'loading') {
     return (
       <PinScreen>
-        <Loading label="Loading" />
+        <Loading label={t('common.loading')} />
       </PinScreen>
     )
   }
@@ -103,9 +104,9 @@ export function PinPage() {
         </h1>
         {verifyFailed ? (
           <p className="pin__dsc" role="alert">
-            We could not check your PIN.
+            {t('pin.verifyFailed.title')}
             <br />
-            Please try again.
+            {t('pin.verifyFailed.detail')}
           </p>
         ) : (
           showError && (
@@ -121,9 +122,9 @@ export function PinPage() {
 
       <div className="pin__btm">
         <a href="#" className="pin__login">
-          Login with ID / Password{' '}
+          {t('pin.loginWithPassword')}{' '}
         </a>
-        <span className="pin__kb">Powered by TestLab</span>
+        <span className="pin__kb">{t('pin.poweredBy')}</span>
         <PinKeypad
           onDigit={onDigit}
           onDelete={onDelete}

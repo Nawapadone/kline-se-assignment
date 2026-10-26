@@ -3,9 +3,13 @@ import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
 import { BrowserRouter } from 'react-router-dom'
 import { App } from './app/App'
+import { env } from './config/env'
 import { store } from './store'
 import './styles/th-bank.css'
 import './styles/app.css'
+
+// Screen readers and CSS `:lang()` read this; index.html ships `en`.
+document.documentElement.lang = env.locale
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

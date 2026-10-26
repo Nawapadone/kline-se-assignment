@@ -1,3 +1,5 @@
+import { env } from '@/config/env'
+import { t } from '@/i18n'
 import type { PinLock } from '@/types'
 
 /** Six dots in pin.html and in design.jpg. */
@@ -34,13 +36,16 @@ export function pinErrorLines({
   secondsRemaining,
 }: PinMessageState): [string, string] {
   if (lock?.kind === 'locked') {
-    return ['Your PIN is locked.', 'Please contact our call centre to unlock it.']
+    return [t('pin.locked.title'), t('pin.locked.detail')]
   }
   if (lock?.kind === 'cooldown') {
-    return ['Too many incorrect attempts.', `Try again in ${formatCountdown(secondsRemaining)}.`]
+    return [t('pin.cooldown.title'), t('pin.cooldown.detail', { time: formatCountdown(secondsRemaining) })]
   }
-  const plural = attemptsLeft === 1 ? 'attempt' : 'attempts'
-  return ['Invalid PIN Code.', `You have ${attemptsLeft} ${plural} left.`]
+  const plural =
+    new Intl.PluralRules(env.locale).select(attemptsLeft) === 'one'
+      ? 'pin.attemptsLeft.one'
+      : 'pin.attemptsLeft.other'
+  return [t('pin.invalid.title'), t(plural, { count: attemptsLeft })]
 }
 
 /** Ignores extra presses once six digits are in — the keypad submits at that point. */

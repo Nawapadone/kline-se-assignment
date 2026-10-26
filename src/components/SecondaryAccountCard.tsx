@@ -1,3 +1,4 @@
+import { t, type MessageKey } from '@/i18n'
 import {
   accountAction,
   accountIssuerLine,
@@ -11,10 +12,10 @@ import { AccountGauge } from './AccountGauge'
 import { AccountMenu } from './AccountMenu'
 
 /** The corner button th-bank.css draws for each action. */
-const ACTION_LABEL: Record<AccountAction, string> = {
-  money: 'Add money',
-  disburse: 'Disburse',
-  pay: 'Pay',
+const ACTION_LABEL: Record<AccountAction, MessageKey> = {
+  money: 'account.addMoney',
+  disburse: 'account.disburse',
+  pay: 'account.pay',
 }
 
 /** "Disbursement" renders with a padlock; every other flag is a plain badge. */
@@ -63,7 +64,7 @@ export function SecondaryAccountCard({
         className="main-acc__more main-acc__more--small"
         onClick={onToggleMenu}
       >
-        <span className="blind">More Action</span>
+        <span className="blind">{t('account.moreAction')}</span>
       </button>
       <AccountMenu
         isOpen={isMenuOpen}
@@ -76,7 +77,7 @@ export function SecondaryAccountCard({
 
       {action && (
         <a href="#" className={`main-acc__act main-acc__act--${action}`}>
-          <span className="blind">{ACTION_LABEL[action]}</span>
+          <span className="blind">{t(ACTION_LABEL[action])}</span>
         </a>
       )}
     </div>
