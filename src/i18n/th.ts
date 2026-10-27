@@ -12,6 +12,7 @@ export const th = {
   'error.server': 'ระบบขัดข้องชั่วคราว กรุณาลองอีกครั้ง',
   'error.loadFailed': 'ไม่สามารถโหลดข้อมูลได้ กรุณาลองอีกครั้ง',
   'error.offline': 'ไม่มีการเชื่อมต่อ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองอีกครั้ง',
+  'error.timeout': 'เซิร์ฟเวอร์ตอบช้าเกินไป กรุณาลองอีกครั้ง',
 
   'pin.locked.title': 'รหัส PIN ของคุณถูกล็อก',
   'pin.locked.detail': 'กรุณาติดต่อคอลเซ็นเตอร์เพื่อปลดล็อก',
@@ -46,7 +47,7 @@ export const th = {
   'account.product.goal-saving-account': 'ออมตามเป้าหมาย',
   'account.numberLine': '{product} {number}',
   'account.poweredBy': 'ให้บริการโดย {issuer}',
-  'account.moreAction': 'การทำรายการเพิ่มเติม',
+  'account.moreActionFor': 'การทำรายการเพิ่มเติมสำหรับ {account}',
   'account.withdrawal': 'ถอนเงิน',
   'account.qrScan': 'สแกน QR',
   'account.addMoney': 'เติมเงิน',

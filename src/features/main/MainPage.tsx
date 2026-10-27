@@ -1,7 +1,9 @@
 import { useCallback, useEffect } from 'react'
+import { flushSync } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { Avatar } from '@/components/Avatar'
 import { DebitCardItem } from '@/components/DebitCardItem'
+import { InertLink } from '@/components/InertLink'
 import { Loading } from '@/components/Loading'
 import { MainAccountCard } from '@/components/MainAccountCard'
 import { Notice } from '@/components/Notice'
@@ -20,6 +22,9 @@ import { signedOut } from '@/store/slices/authSlice'
 import { fetchDashboard } from '@/store/slices/dashboardSlice'
 import { useCoachMark } from './useCoachMark'
 import { useCopyAccountNumber } from './useCopyAccountNumber'
+
+/** Only one menu is open at a time, so its trigger is the one marked expanded. */
+const OPEN_MENU_TRIGGER = '[aria-expanded="true"][aria-controls]'
 
 export function MainPage() {
   const dispatch = useAppDispatch()
@@ -47,41 +52,76 @@ export function MainPage() {
   const loadDashboard = useCallback(() => void dispatch(fetchDashboard()), [dispatch])
 
   /**
-   * Loaded on every entry, not only when the store is empty. Signing out clears
-   * the session but leaves the slices filled, so a `status === 'idle'` guard let
-   * the next sign-in render the previous session's balances and account numbers
-   * without asking the server anything.
+   * Loaded on every entry, not only when the store is empty. Signing out already
+   * clears the slices; the refetch keeps the balances fresh on every visit.
    */
   useEffect(() => {
     loadAccounts()
     loadDashboard()
   }, [loadAccounts, loadDashboard])
 
+  /** Closes the open menu from inside it, handing focus back to its trigger. */
+  const closeMenu = useCallback(() => {
+    document.querySelector<HTMLElement>(OPEN_MENU_TRIGGER)?.focus()
+    dispatch(menuClosed())
+  }, [dispatch])
+
   /**
    * A menu is dismissed by tapping anywhere else, as a native action sheet is —
    * but not by tapping inside it. The menu is hidden with `display: none`, so
    * closing it on pointerdown swallowed the click on its own buttons and left
-   * every menu action unreachable.
+   * every menu action unreachable. Nor by tapping its own trigger, whose click
+   * would otherwise reopen what pointerdown had just closed. Opening one moves
+   * focus to its first item and Escape closes it, so it works from the keyboard too.
    */
   useEffect(() => {
     if (openMenuIndex === null) return
+    const trigger = document.querySelector<HTMLElement>(OPEN_MENU_TRIGGER)
+    const menuId = trigger?.getAttribute('aria-controls')
+    const menu = menuId ? document.getElementById(menuId) : null
+    menu?.querySelector<HTMLElement>('button:not(:disabled)')?.focus()
+
     const close = (event: PointerEvent) => {
-      if ((event.target as Element | null)?.closest('.tooltip')) return
+      const target = event.target as Element | null
+      if (target?.closest('.tooltip') || (target && trigger?.contains(target))) return
+      dispatch(menuClosed())
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.isComposing) return
+      // Focus goes back only if it was in the menu; elsewhere it stays put.
+      const focused = document.activeElement
+      if (trigger?.contains(focused) || menu?.contains(focused)) trigger?.focus()
       dispatch(menuClosed())
     }
     window.addEventListener('pointerdown', close)
-    return () => window.removeEventListener('pointerdown', close)
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      window.removeEventListener('pointerdown', close)
+      window.removeEventListener('keydown', onKeyDown)
+    }
   }, [dispatch, openMenuIndex])
 
   const toggleMenu = useCallback(
-    (index: number) => (event: React.MouseEvent) => {
-      // The document-level listener above would otherwise close it again at once.
-      event.stopPropagation()
+    (index: number) => () => {
       dismissCoachMark()
       dispatch(menuToggled(index))
     },
     [dispatch, dismissCoachMark],
   )
+
+  const copyAndClose = (accountNumber: string) => {
+    void copy(accountNumber)
+    closeMenu()
+  }
+
+  /**
+   * Cards are keyed by position, so the promoted card unmounts and takes focus
+   * with it. Committing synchronously lets focus land on the new main card's trigger.
+   */
+  const setMainAccount = (index: number) => {
+    flushSync(() => dispatch(mainAccountSet(index)))
+    document.querySelector<HTMLElement>('.main-acc--large .main-acc__more')?.focus()
+  }
 
   const signOut = useCallback(() => {
     dispatch(signedOut())
@@ -118,7 +158,7 @@ export function MainPage() {
             account={mainEntry.account}
             isMenuOpen={openMenuIndex === mainEntry.index}
             onToggleMenu={toggleMenu(mainEntry.index)}
-            onCopyAccountNumber={() => void copy(mainEntry.account.accountNumber)}
+            onCopyAccountNumber={() => copyAndClose(mainEntry.account.accountNumber)}
             showCoachMark={showCoachMark}
           />
         )}
@@ -132,9 +172,9 @@ export function MainPage() {
                 {debitCards.map((card, index) => (
                   <DebitCardItem key={`${card.name}-${index}`} card={card} />
                 ))}
-                <a href="#" className="debit-swipe__item debit-swipe__item--all">
+                <InertLink className="debit-swipe__item debit-swipe__item--all">
                   {t('main.seeAll')}
-                </a>
+                </InertLink>
               </div>
             </div>
           </div>
@@ -160,23 +200,23 @@ export function MainPage() {
             account={account}
             isMenuOpen={openMenuIndex === index}
             onToggleMenu={toggleMenu(index)}
-            onSetMainAccount={() => dispatch(mainAccountSet(index))}
-            onCopyAccountNumber={() => void copy(account.accountNumber)}
+            onSetMainAccount={() => setMainAccount(index)}
+            onCopyAccountNumber={() => copyAndClose(account.accountNumber)}
           />
         ))}
 
         {banners.map(banner => (
-          <a href="#" className="main-prod" key={banner.title}>
+          <InertLink className="main-prod" key={banner.title}>
             <Avatar src={banner.image} className="main-prod__cms-ico" />
             <strong className="main-prod__tit">{banner.title}</strong>
             <p className="main-prod__dsc">{banner.description}</p>
-          </a>
+          </InertLink>
         ))}
 
         <div className="main-tb">
-          <a href="#" className="link-to">
+          <InertLink className="link-to">
             {t('main.totalBalance')}
-          </a>
+          </InertLink>
         </div>
       </div>
     )
@@ -185,9 +225,9 @@ export function MainPage() {
   return (
     <div className="wrap">
       <header className="header">
-        <a href="#" className="header__lft header__menu">
+        <InertLink className="header__lft header__menu">
           <span className="blind">{t('main.menu')}</span>
-        </a>
+        </InertLink>
         <button type="button" className="header__rgt header__cxl" onClick={signOut}>
           <span className="blind">{t('main.cancel')}</span>
         </button>
@@ -195,8 +235,12 @@ export function MainPage() {
 
       <main className="container container--main">{renderBody()}</main>
 
+      {/* Always mounted: a live region added together with its text is often not read. */}
+      <div className="blind" role="status">
+        {copyMessage}
+      </div>
       {copyMessage && (
-        <div className="tooltip tooltip--bubble app-toast" style={{ display: 'block' }} role="status">
+        <div className="tooltip tooltip--bubble app-toast" style={{ display: 'block' }} aria-hidden="true">
           <span className="tooltip__txt">{copyMessage}</span>
         </div>
       )}

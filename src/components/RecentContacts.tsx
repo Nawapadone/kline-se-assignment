@@ -1,5 +1,6 @@
 import type { RecentTransaction } from '@/types'
 import { Avatar } from './Avatar'
+import { InertLink } from './InertLink'
 
 interface RecentContactsProps {
   contacts: RecentTransaction[]
@@ -14,7 +15,7 @@ export function RecentContacts({ contacts }: RecentContactsProps) {
       <ul className="rctly__lst">
         {contacts.map((contact, index) => (
           <li className="rctly__item" key={`${contact.name}-${index}`}>
-            <a href="#" className="rctly__link">
+            <InertLink className="rctly__link">
               <Avatar
                 src={contact.image}
                 alt=""
@@ -22,7 +23,7 @@ export function RecentContacts({ contacts }: RecentContactsProps) {
                 variant={contact.isBank ? 'bank' : 'person'}
               />
               <span className="rctly__name">{contact.name}</span>
-            </a>
+            </InertLink>
           </li>
         ))}
       </ul>

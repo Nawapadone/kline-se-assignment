@@ -1,6 +1,8 @@
 import { t } from '@/i18n'
 
 interface AccountMenuProps {
+  /** Referenced by the trigger's `aria-controls`. */
+  id: string
   isOpen: boolean
   /** Absent on the account that is already main — there is nothing to promote. */
   onSetMainAccount?: () => void
@@ -15,6 +17,7 @@ interface AccountMenuProps {
  * or colour picker for it, and no endpoint accepts the change.
  */
 export function AccountMenu({
+  id,
   isOpen,
   onSetMainAccount,
   onCopyAccountNumber,
@@ -23,7 +26,7 @@ export function AccountMenu({
   const className = variant === 'sub' ? 'tooltip tooltip--sub-acc' : 'tooltip'
 
   return (
-    <div className={className} style={{ display: isOpen ? 'block' : 'none' }}>
+    <div id={id} className={className} style={{ display: isOpen ? 'block' : 'none' }}>
       {onSetMainAccount && (
         <button type="button" className="tooltip__btn-more" onClick={onSetMainAccount}>
           {t('account.setMain')}

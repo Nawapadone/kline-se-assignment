@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { signedOut } from '@/store/actions'
 import type { Account } from '@/types'
 import reducer, {
   fetchAccounts,
@@ -20,10 +21,9 @@ const loan: Account = { ...saving, type: 'credit-loan', isMainAccount: false }
 /** Same type, same account number as `loan` — the mock data really is like this. */
 const twinLoan: Account = { ...loan, name: 'Need to repay', flags: ['Overdue'] }
 
-const loaded = reducer(
-  undefined,
-  fetchAccounts.fulfilled([saving, loan, twinLoan], '', undefined),
-)
+// A response only counts for the request the slice is waiting on, so start one.
+const waiting = reducer(undefined, fetchAccounts.pending('', undefined))
+const loaded = reducer(waiting, fetchAccounts.fulfilled([saving, loan, twinLoan], '', undefined))
 
 describe('accountsSlice', () => {
   it('stores the accounts it fetched', () => {
@@ -33,7 +33,7 @@ describe('accountsSlice', () => {
 
   it('surfaces a readable message when the fetch fails', () => {
     const failed = reducer(
-      undefined,
+      waiting,
       fetchAccounts.rejected(
         new TypeError('fetch failed'),
         '',
@@ -70,5 +70,37 @@ describe('accountsSlice', () => {
   it('closes the menu after setting a main account', () => {
     const open = reducer(loaded, menuToggled(1))
     expect(reducer(open, mainAccountSet(1)).openMenuIndex).toBeNull()
+  })
+
+  it('forgets the accounts on sign-out', () => {
+    const open = reducer(loaded, menuToggled(1))
+    expect(reducer(open, signedOut())).toEqual(reducer(undefined, { type: '@@init' }))
+  })
+})
+
+describe('accountsSlice and late responses', () => {
+  const initial = reducer(undefined, { type: '@@init' })
+
+  it('drops a response that lands after sign-out', () => {
+    const state = [
+      fetchAccounts.pending('A', undefined),
+      signedOut(),
+      fetchAccounts.fulfilled([saving], 'A', undefined),
+    ].reduce(reducer, initial)
+    expect(state).toEqual(initial)
+  })
+
+  it('lets only the newest request write', () => {
+    const racing = [
+      fetchAccounts.pending('A', undefined),
+      fetchAccounts.pending('B', undefined),
+      fetchAccounts.fulfilled([saving], 'A', undefined),
+    ].reduce(reducer, initial)
+    expect(racing.items).toEqual([])
+    expect(racing.status).toBe('loading')
+
+    const settled = reducer(racing, fetchAccounts.fulfilled([saving, loan], 'B', undefined))
+    expect(settled.items).toHaveLength(2)
+    expect(settled.status).toBe('succeeded')
   })
 })

@@ -61,6 +61,15 @@ test.describe('account action menu', () => {
     await expect(page.getByRole('button', { name: 'Set main account' })).toHaveCount(1)
   })
 
+  test('closes when its trigger is tapped again', async ({ page }) => {
+    const trigger = page.locator('.main-acc__more--small').first()
+    await trigger.click()
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true')
+
+    await trigger.click()
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+  })
+
   test('closes when anything else is tapped', async ({ page }) => {
     await page.locator('.main-acc__more--small').first().click()
     await expect(page.getByRole('button', { name: 'Copy account number' })).toBeVisible()
@@ -69,14 +78,31 @@ test.describe('account action menu', () => {
     await expect(page.getByRole('button', { name: 'Copy account number' })).toHaveCount(0)
   })
 
+  test('works from the keyboard: opens onto its first item, Escape returns', async ({ page }) => {
+    const trigger = page.getByRole('button', { name: 'More Action for Travel New York' })
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+
+    await trigger.focus()
+    await page.keyboard.press('Enter')
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    await expect(page.getByRole('button', { name: 'Set main account' })).toBeFocused()
+
+    await page.keyboard.press('Escape')
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    await expect(page.getByRole('button', { name: 'Set main account' })).toHaveCount(0)
+    await expect(trigger).toBeFocused()
+  })
+
   test('promotes an account to main, keeping its own colour', async ({ page }) => {
     await expect(page.locator('.main-acc--large .main-acc__name')).toHaveText('Saving Account')
 
     await page.locator('.main-acc__more--small').nth(1).click()
-    await page.getByRole('button', { name: 'Set main account' }).click()
+    await page.getByRole('button', { name: 'Set main account' }).press('Enter')
 
     const main = page.locator('.main-acc--large')
     await expect(main.locator('.main-acc__name')).toHaveText('Travel New York')
+    // The promoted card re-renders in a new place; focus follows it there.
+    await expect(main.locator('.main-acc__more')).toBeFocused()
     // th-bank.css hardcodes #24c875 on the card and its action bar.
     await expect(main).toHaveCSS('background-color', 'rgb(0, 161, 226)')
     await expect(main.locator('.main-acc__link__box')).toHaveCSS(
@@ -95,9 +121,13 @@ test.describe('account action menu', () => {
     test.skip(browserName !== 'chromium', 'clipboard permissions are Chromium-only here')
     await context.grantPermissions(['clipboard-read', 'clipboard-write'])
 
-    await page.locator('.main-acc__more').first().click()
+    const trigger = page.locator('.main-acc__more').first()
+    await trigger.click()
     await page.getByRole('button', { name: 'Copy account number' }).click()
 
+    // Copying is the menu's last step, so it closes and hands focus back.
+    await expect(page.getByRole('button', { name: 'Copy account number' })).toHaveCount(0)
+    await expect(trigger).toBeFocused()
     await expect(page.getByRole('status')).toContainText('Account number copied')
     await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(
       '568-2-81740-9',

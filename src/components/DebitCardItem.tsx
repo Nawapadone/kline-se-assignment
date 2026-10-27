@@ -1,6 +1,7 @@
 import { t } from '@/i18n'
 import { formatCardStatus, isCardActive, maskCardNumber } from '@/lib/card'
 import type { DebitCard } from '@/types'
+import { InertLink } from './InertLink'
 
 interface DebitCardItemProps {
   card: DebitCard
@@ -19,7 +20,7 @@ export function DebitCardItem({ card }: DebitCardItemProps) {
   } as React.CSSProperties
 
   return (
-    <a href="#" className="debit-swipe__item" style={style}>
+    <InertLink className="debit-swipe__item" style={style}>
       <strong className="debit-swipe__name">{card.name}</strong>
       {active && card.number ? (
         <span className="debit-swipe__etc debit-swipe__etc--active">
@@ -34,6 +35,6 @@ export function DebitCardItem({ card }: DebitCardItemProps) {
       >
         {t('card.issuedBy', { issuer: card.issuer })}
       </span>
-    </a>
+    </InertLink>
   )
 }

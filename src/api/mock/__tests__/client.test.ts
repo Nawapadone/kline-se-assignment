@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { MAX_PIN_ATTEMPTS } from '@/lib/pin'
 import { cooldownForRound, MAX_COOLDOWN_ROUNDS } from '../lockout'
 import { MockApiClient } from '../client'
@@ -114,5 +114,53 @@ describe('MockApiClient', () => {
     await client.verifyPin({ pin: PIN })
     const result = await client.verifyPin({ pin: WRONG_PIN })
     expect(result.attemptsLeft).toBe(MAX_PIN_ATTEMPTS - 1)
+  })
+})
+
+describe('MockApiClient across tabs', () => {
+  const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
+
+  afterEach(() => {
+    if (original) Object.defineProperty(globalThis, 'localStorage', original)
+    else Reflect.deleteProperty(globalThis, 'localStorage')
+  })
+
+  it('counts failures from two instances sharing storage toward one cooldown', async () => {
+    const store = new Map<string, string>()
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      value: {
+        getItem: (k: string) => store.get(k) ?? null,
+        setItem: (k: string, v: string) => void store.set(k, v),
+        removeItem: (k: string) => void store.delete(k),
+      },
+    })
+    const options = { latencyMs: 0, acceptedPin: PIN, now: () => 1_700_000_000_000, persist: true }
+    const tabA = new MockApiClient(options)
+    const tabB = new MockApiClient(options)
+
+    await tabA.verifyPin({ pin: WRONG_PIN })
+    await tabB.verifyPin({ pin: WRONG_PIN })
+    const third = await tabA.verifyPin({ pin: WRONG_PIN })
+    expect(third.lock?.kind).toBe('cooldown')
+
+    const other = await tabB.verifyPin({ pin: PIN })
+    expect(other).toEqual({ success: false, lock: { kind: 'cooldown', secondsRemaining: cooldownForRound(1) } })
+  })
+
+  it('still starts a cooldown when storage is blocked', async () => {
+    const blocked = () => {
+      throw new Error('blocked')
+    }
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      value: { getItem: blocked, setItem: blocked, removeItem: blocked },
+    })
+    const client = new MockApiClient({ latencyMs: 0, acceptedPin: PIN, now: () => 1_700_000_000_000, persist: true })
+
+    await client.verifyPin({ pin: WRONG_PIN })
+    await client.verifyPin({ pin: WRONG_PIN })
+    const third = await client.verifyPin({ pin: WRONG_PIN })
+    expect(third.lock?.kind).toBe('cooldown')
   })
 })

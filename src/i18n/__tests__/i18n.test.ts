@@ -28,12 +28,16 @@ describe('createT', () => {
 describe('th dictionary', () => {
   const keys = Object.keys(en) as MessageKey[]
 
-  it.each(keys)('translates %s', key => {
-    expect(th[key].trim()).not.toBe('')
+  it('translates every key', () => {
+    const missing = keys.filter(key => th[key].trim() === '')
+    expect(missing).toEqual([])
   })
 
   // tsc catches a missing key but not a translation that drops `{count}`.
-  it.each(keys)('keeps the placeholders of %s', key => {
-    expect(placeholders(th[key])).toEqual(placeholders(en[key]))
+  it('keeps the placeholders of every key', () => {
+    const mismatched = keys.filter(
+      key => placeholders(th[key]).join() !== placeholders(en[key]).join(),
+    )
+    expect(mismatched).toEqual([])
   })
 })

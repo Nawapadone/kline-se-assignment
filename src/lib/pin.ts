@@ -8,6 +8,11 @@ export const PIN_LENGTH = 6
 /** "You have 3 attempt left." in pin.html sets the budget for one round. */
 export const MAX_PIN_ATTEMPTS = 3
 
+/** When a cooldown ends, as a timestamp; zero when there is none to wait out. */
+export function cooldownDeadline(lock: PinLock | null, now: number): number {
+  return lock?.kind === 'cooldown' && lock.secondsRemaining > 0 ? now + lock.secondsRemaining * 1000 : 0
+}
+
 /** `0:59`, `5:00`, `15:00` — minutes and seconds, as a countdown reads. */
 export function formatCountdown(totalSeconds: number): string {
   const seconds = Math.max(Math.ceil(totalSeconds), 0)

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Avatar } from '@/components/Avatar'
+import { InertLink } from '@/components/InertLink'
 import { Loading } from '@/components/Loading'
 import { Notice } from '@/components/Notice'
 import { PinDots } from '@/components/PinDots'
@@ -121,14 +122,15 @@ export function PinPage() {
       </div>
 
       <div className="pin__btm">
-        <a href="#" className="pin__login">
+        <InertLink className="pin__login">
           {t('pin.loginWithPassword')}{' '}
-        </a>
+        </InertLink>
         <span className="pin__kb">{t('pin.poweredBy')}</span>
         <PinKeypad
           onDigit={onDigit}
           onDelete={onDelete}
-          disabled={isBlocked || status === 'loading'}
+          disabled={isBlocked}
+          busy={status === 'loading'}
         />
       </div>
     </PinScreen>

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { t } from '@/i18n'
 
 const FEEDBACK_MS = 1800
+/** Long enough for screen readers to register the cleared region as a change. */
+const REANNOUNCE_MS = 100
 
 /**
  * Copies an account number and reports it, because a copy with no acknowledgement
@@ -16,9 +18,13 @@ export function useCopyAccountNumber() {
   useEffect(() => () => void (timer.current && clearTimeout(timer.current)), [])
 
   const announce = useCallback((text: string) => {
-    setMessage(text)
     if (timer.current) clearTimeout(timer.current)
-    timer.current = setTimeout(() => setMessage(null), FEEDBACK_MS)
+    // A live region speaks only when its text changes, so a repeat is cleared first.
+    setMessage(null)
+    timer.current = setTimeout(() => {
+      setMessage(text)
+      timer.current = setTimeout(() => setMessage(null), FEEDBACK_MS)
+    }, REANNOUNCE_MS)
   }, [])
 
   const copy = useCallback(

@@ -14,6 +14,7 @@ export const en = {
   'error.server': 'The server is having trouble. Please try again.',
   'error.loadFailed': 'We could not load your data. Please try again.',
   'error.offline': 'No connection. Check your network and try again.',
+  'error.timeout': 'The server took too long to answer. Please try again.',
 
   'pin.locked.title': 'Your PIN is locked.',
   'pin.locked.detail': 'Please contact our call centre to unlock it.',
@@ -48,7 +49,7 @@ export const en = {
   'account.product.goal-saving-account': 'Goal driven savings',
   'account.numberLine': '{product} {number}',
   'account.poweredBy': 'Powered by {issuer}',
-  'account.moreAction': 'More Action',
+  'account.moreActionFor': 'More Action for {account}',
   'account.withdrawal': 'Withdrawal',
   'account.qrScan': 'QR scan',
   'account.addMoney': 'Add money',

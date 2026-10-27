@@ -1,6 +1,8 @@
-import { createAsyncThunk } from '@reduxjs/toolkit'
+import { createAsyncThunk, type UnknownAction } from '@reduxjs/toolkit'
 import { t } from '@/i18n'
-import { toErrorMessage } from '@/lib/load-error'
+import { isSessionExpired, toErrorMessage } from '@/lib/load-error'
+import { signedOut } from './actions'
+import type { RootState } from '.'
 
 /**
  * Shown when a rejection somehow arrives without a classified message. Slices
@@ -8,6 +10,30 @@ import { toErrorMessage } from '@/lib/load-error'
  * build — a runtime language switch would need keys in state instead.
  */
 export const GENERIC_ERROR = t('error.generic')
+
+/**
+ * The server no longer accepts the session, so end it rather than show "load
+ * failed" — but only a session that exists. Before the PIN is accepted, or once
+ * an earlier 401 has already signed out, another sign-out would reset the
+ * profile and a PIN check in flight to `idle`: the splash refetched in a loop,
+ * and the keypad unlocked mid-submit. A 401 for a request sent in an earlier
+ * session says nothing about the open one, so `startedIn` must still match.
+ * Every call site goes through here.
+ */
+export function endSessionIfExpired(
+  error: unknown,
+  dispatch: (action: UnknownAction) => unknown,
+  getState: () => unknown,
+  startedIn: number,
+) {
+  const { auth } = getState() as RootState
+  if (isSessionExpired(error) && auth.isAuthenticated && auth.session === startedIn) {
+    dispatch(signedOut())
+  }
+}
+
+/** The session a request belongs to; read before it is sent. */
+export const sessionOf = (getState: () => unknown) => (getState() as RootState).auth.session
 
 /**
  * createAsyncThunk serialises a rejection, so by the time a reducer reads
@@ -22,10 +48,12 @@ export function createApiThunk<Returned, Arg = void>(
 ) {
   return createAsyncThunk<Returned, Arg, { rejectValue: string }>(
     typePrefix,
-    async (arg, { rejectWithValue }) => {
+    async (arg, { dispatch, getState, rejectWithValue }) => {
+      const startedIn = sessionOf(getState)
       try {
         return await request(arg)
       } catch (error) {
+        endSessionIfExpired(error, dispatch, getState, startedIn)
         return rejectWithValue(toErrorMessage(error))
       }
     },

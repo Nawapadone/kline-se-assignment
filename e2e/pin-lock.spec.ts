@@ -49,6 +49,8 @@ test.describe('a cooldown the user can sit out', () => {
     await page.goto('/pin')
     await page.locator('.pin__keys').waitFor()
     await page.keyboard.type(WRONG_PIN)
+    // The keypad is enabled during the check itself, so wait for the block first.
+    await expect(page.getByRole('alert')).toContainText('Try again in')
     await expect(page.getByRole('button', { name: '1', exact: true })).toBeEnabled({
       timeout: 5_000,
     })

@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { t, type MessageKey } from '@/i18n'
 import {
   accountAction,
@@ -10,6 +11,7 @@ import { formatAmount } from '@/lib/money'
 import type { Account } from '@/types'
 import { AccountGauge } from './AccountGauge'
 import { AccountMenu } from './AccountMenu'
+import { InertLink } from './InertLink'
 
 /** The corner button th-bank.css draws for each action. */
 const ACTION_LABEL: Record<AccountAction, MessageKey> = {
@@ -24,7 +26,7 @@ const LOCK_FLAG = 'Disbursement'
 interface SecondaryAccountCardProps {
   account: Account
   isMenuOpen: boolean
-  onToggleMenu: (event: React.MouseEvent) => void
+  onToggleMenu: () => void
   onSetMainAccount: () => void
   onCopyAccountNumber: () => void
 }
@@ -38,6 +40,7 @@ export function SecondaryAccountCard({
 }: SecondaryAccountCardProps) {
   const action = accountAction(account)
   const issuerLine = accountIssuerLine(account)
+  const menuId = useId()
 
   return (
     <div className="main-acc is-small" style={{ backgroundColor: account.color }}>
@@ -62,11 +65,14 @@ export function SecondaryAccountCard({
       <button
         type="button"
         className="main-acc__more main-acc__more--small"
+        aria-expanded={isMenuOpen}
+        aria-controls={menuId}
         onClick={onToggleMenu}
       >
-        <span className="blind">{t('account.moreAction')}</span>
+        <span className="blind">{t('account.moreActionFor', { account: accountTitle(account) })}</span>
       </button>
       <AccountMenu
+        id={menuId}
         isOpen={isMenuOpen}
         variant="sub"
         onSetMainAccount={onSetMainAccount}
@@ -76,9 +82,9 @@ export function SecondaryAccountCard({
       {account.progress !== undefined && <AccountGauge progress={account.progress} />}
 
       {action && (
-        <a href="#" className={`main-acc__act main-acc__act--${action}`}>
+        <InertLink className={`main-acc__act main-acc__act--${action}`}>
           <span className="blind">{t(ACTION_LABEL[action])}</span>
-        </a>
+        </InertLink>
       )}
     </div>
   )
