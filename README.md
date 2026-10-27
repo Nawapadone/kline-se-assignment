@@ -9,6 +9,37 @@ Redux Toolkit and the team's HTML/CSS converted to components.
 | `/pin` | `pin.html` | Six-digit PIN with a three-attempt lockout |
 | `/main` | `bank_main.html` | Accounts, recent payees, debit cards and banners |
 
+## At a glance
+
+**Run it:** `bun install && bun run dev`, open http://localhost:5173, PIN **123456**.
+No backend needed. `docker compose up --build` serves the production build on :8080.
+
+**Five decisions that shape the code**
+
+1. **The PIN block belongs to the authority, not the keypad.** Three wrong PINs
+   start an escalating cooldown (1 min, 5 min), then a lock only the bank lifts,
+   following NIST SP 800-63B. The mock client plays that authority and survives
+   reloads. [Details](#features)
+2. **One data boundary.** Screens talk to an `ApiClient`; a mock serves fixtures
+   by default and `VITE_USE_MOCK=false` switches to the real endpoints. CI proves
+   a real-backend build carries no fixtures. [Details](#api)
+3. **Failure is designed, not ignored.** Every screen has loading, error-with-retry
+   and empty states; one failed list never blanks the rest; a 401/403 ends the
+   session; sign-out clears every balance from memory.
+4. **The team's CSS is kept as delivered.** `th-bank.css` is untouched; the few
+   additions live in `styles/app.css`. [Why not Tailwind](#decisions-worth-knowing)
+5. **Logic lives in plain functions.** Masking, PIN rules and error wording sit in
+   `src/lib`, so they are unit-tested without a DOM.
+
+**Quality gates, all in CI:** 112 unit tests, 57 Playwright end-to-end tests
+(including fault injection for half-loaded screens), 32 Storybook stories,
+typecheck, lint with React hooks rules, and a Docker job that checks the security
+headers. English and Thai UI via `VITE_LOCALE`.
+
+**Where to look first:** `src/features/` (the three screens), `src/store/` (state
+and session rules), `src/lib/` (business rules), and [Known gaps](#known-gaps)
+for what the provided resources left open.
+
 ## Setup
 
 **bun is required** — not only as the package manager. Vite, Playwright and
