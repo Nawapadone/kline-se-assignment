@@ -6,7 +6,7 @@ const meta = {
   title: 'Main/AccountMenu',
   component: AccountMenu,
   parameters: { frame: 'card' },
-  args: { isOpen: true, onCopyAccountNumber: fn() },
+  args: { id: 'account-menu', isOpen: true, onCopyAccountNumber: fn() },
   decorators: [
     Story => (
       <div className="main-acc is-small" style={{ backgroundColor: '#15bbc7', minHeight: 220 }}>

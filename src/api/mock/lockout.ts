@@ -42,7 +42,7 @@ const STORAGE_KEY = 'kline.mock.lockout'
  * gone, which is exactly the hole the design exists to close. A real backend
  * keeps this server-side and this module disappears with it.
  */
-export function readLockout(): LockoutState {
+export function readLockout(fallback: LockoutState = EMPTY_LOCKOUT): LockoutState {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (!stored) return { ...EMPTY_LOCKOUT }
@@ -53,8 +53,9 @@ export function readLockout(): LockoutState {
       cooldownUntil: Number(parsed.cooldownUntil) || 0,
     }
   } catch {
-    // Private mode, blocked storage or a corrupt value — start clean rather than throw.
-    return { ...EMPTY_LOCKOUT }
+    // Private mode, blocked storage or a corrupt value — keep what this page already
+    // counted rather than throw, or every check would reset the count.
+    return { ...fallback }
   }
 }
 

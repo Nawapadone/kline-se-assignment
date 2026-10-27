@@ -24,15 +24,19 @@ The demo PIN is **123456**. Mock data is served from `src/api/mock/data`, so no
 backend is needed.
 
 ```bash
-bun run test         # unit tests (183)
-bun run test:e2e     # Playwright end-to-end (53), starts the servers itself
+bun run test         # unit tests (112)
+bun run test:e2e     # Playwright end-to-end (57), starts the servers itself
 bun run typecheck    # tsc --build
 bun run build        # production build into dist/
 bun run storybook    # component explorer and interaction tests on :6006
-bun run lint         # oxlint
+bun run test-storybook --url <url>  # play functions against a served Storybook
+bun run lint         # oxlint, with the React hooks rules
 ```
 
-Every one of these runs on push in `.github/workflows/ci.yml`.
+CI (`.github/workflows/ci.yml`) runs all of these on pushes to `main` and on
+pull requests, with Storybook as a static build: it serves `storybook-static`
+and renders every story in Chromium, running the play functions where a story
+has one.
 
 ### Docker
 
@@ -44,7 +48,7 @@ Or without compose:
 
 ```bash
 docker build -t kline-frontend .
-docker run --rm -p 8080:80 kline-frontend
+docker run --rm -p 8080:8080 kline-frontend
 ```
 
 The image is built in two stages: bun installs and runs `bun run build`, which
@@ -52,7 +56,9 @@ is `tsc -b && vite build`, so a type error fails the build; the second stage is
 nginx with only `dist/` copied in, so neither bun nor `node_modules` nor the
 sources ship. `docker/nginx.conf` returns `index.html` for unmatched paths —
 without that, reloading on `/pin` or `/main` would 404 — and caches the
-fingerprinted files in `/assets/` while keeping `index.html` fresh.
+fingerprinted files in `/assets/` while keeping `index.html` fresh. The image
+runs nginx unprivileged and sends a Content-Security-Policy plus the usual
+security headers; its `connect-src` takes `VITE_API_BASE_URL`.
 
 Vite inlines `VITE_*` at build time, so configuration is **build arguments**,
 not runtime environment. A different setting means a different image:
@@ -98,9 +104,11 @@ src/
 ├── store/                  # Redux Toolkit
 │   ├── slices/             #   user, auth, accounts, dashboard
 │   ├── selectors.ts        #   memoised reads
+│   ├── actions.ts          #   shared `signedOut` action
 │   ├── createApiThunk.ts   #   thunk factory that classifies errors
 │   └── hooks.ts            #   pre-typed useAppSelector / useAppDispatch
 ├── components/             # presentational, plus their stories
+│   └── InertLink.tsx       #   template links with no destination
 ├── features/               # one folder per screen, with its own hooks
 ├── app/                    # routes, the PIN guard and the render error boundary
 ├── styles/
@@ -116,6 +124,9 @@ Three rules shape it:
 
 - **One data boundary.** Features import `apiClient` and never learn whether a
   fixture or a server answered. Swapping in a backend is one env variable.
+  CI builds with `VITE_USE_MOCK=false` and fails if known fixture strings — the
+  demo PIN, the mock's lockout key, a card and an account number — are in the
+  output (`bun run check:real-bundle`).
 - **Logic outside React.** Anything that decides something — what a card is
   called, which action it offers, how an amount reads, when a PIN locks — lives
   in `src/lib` as a plain function, which is why the tests need no DOM.
@@ -154,8 +165,8 @@ The block belongs to the authority, not the keypad. `verifyPin` returns the lock
 and refuses even a correct PIN while one is in force, so a disabled keypad is a
 convenience rather than the control. The screen counts the wait down against a
 deadline, which keeps it honest in a backgrounded tab where browsers throttle
-timers, and winding the device clock forward gains nothing because the next
-attempt is checked by the authority anyway.
+timers. With a backend the server times the cooldown; the bundled mock times it
+with the device clock, so winding that forward shortens the wait.
 
 With no backend, that authority is `MockApiClient`, so its counters are kept in
 `localStorage` — otherwise a reload would clear every block, which is the hole
@@ -180,6 +191,9 @@ The wording comes from the status: a 404 reads as "not available yet", a 5xx as 
 server problem, and an unreachable backend as "no connection". The three
 dashboard lists are fetched with `Promise.allSettled`, so a failing endpoint
 costs only its own list instead of discarding the two that answered.
+
+A 401 or 403 from the backend ends a signed-in session and returns to the PIN
+screen. Requests time out after 15 s and say so in their own message.
 
 **Main** renders entirely from the payloads. Card colours come from the API
 rather than the stylesheet's colour classes, titles fall back to a type label

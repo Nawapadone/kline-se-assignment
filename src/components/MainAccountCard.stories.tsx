@@ -40,7 +40,9 @@ export const WithCoachMark: Story = { args: { showCoachMark: true } }
 export const OpensItsMenu: Story = {
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('button', { name: 'More Action' }))
+    const trigger = canvas.getByRole('button', { name: 'More Action for Saving Account' })
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    await userEvent.click(trigger)
     await expect(args.onToggleMenu).toHaveBeenCalled()
   },
 }

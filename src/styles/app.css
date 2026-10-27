@@ -78,7 +78,8 @@
 	opacity: .15;
 }
 
-.pin__key:disabled {
+.pin__key:disabled,
+.pin__keys[aria-busy='true'] .pin__key {
 	opacity: .4;
 }
 

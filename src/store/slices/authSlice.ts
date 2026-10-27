@@ -3,6 +3,9 @@ import { apiClient } from '@/api'
 import { appendPinDigit, deletePinDigit, MAX_PIN_ATTEMPTS } from '@/lib/pin'
 import type { VerifyPinResult } from '@/api/types'
 import type { PinLock } from '@/types'
+import { signedOut } from '../actions'
+import { createApiThunk } from '../createApiThunk'
+import type { RequestStatus } from '../status'
 
 /**
  * Accepts a lock only in the two shapes the contract defines. A backend that
@@ -25,8 +28,6 @@ function readLock(lock: unknown): PinLock | null {
   }
   return null
 }
-import { createApiThunk } from '../createApiThunk'
-import type { RequestStatus } from '../status'
 
 interface AuthState {
   /** Digits entered so far — never persisted, never logged. */
@@ -36,6 +37,8 @@ interface AuthState {
   isAuthenticated: boolean
   /** Why the keypad is blocked, as the authority reported it. */
   lock: PinLock | null
+  /** Counts sign-ins, so a request can tell whether its session is still the open one. */
+  session: number
 }
 
 const initialState: AuthState = {
@@ -44,6 +47,7 @@ const initialState: AuthState = {
   status: 'idle',
   isAuthenticated: false,
   lock: null,
+  session: 0,
 }
 
 export const submitPin = createApiThunk('auth/submitPin', (pin: string) =>
@@ -72,16 +76,17 @@ const authSlice = createSlice({
       state.lock = null
       state.attemptsLeft = MAX_PIN_ATTEMPTS
     },
-    /**
-     * Leaving the main screen drops the session, as a banking app would. It also
-     * drops the lock, which is safe because only a signed-in user can reach it
-     * and a blocked user never signs in — and because the authority holds the
-     * block regardless of what this store forgets.
-     */
-    signedOut: () => initialState,
   },
   extraReducers: builder => {
     builder
+      /**
+       * Leaving the main screen drops the session, as a banking app would. It also
+       * drops the lock, which is safe because only a signed-in user can reach it
+       * and a blocked user never signs in — and because the authority holds the
+       * block regardless of what this store forgets.
+       */
+      // The counter survives, or the next sign-in would reuse the number just closed.
+      .addCase(signedOut, state => ({ ...initialState, session: state.session }))
       .addCase(submitPin.pending, state => {
         state.status = 'loading'
       })
@@ -90,6 +95,7 @@ const authSlice = createSlice({
         state.pin = ''
         if (action.payload.success) {
           state.isAuthenticated = true
+          state.session += 1
           state.attemptsLeft = MAX_PIN_ATTEMPTS
           state.lock = null
           return
@@ -113,5 +119,6 @@ const authSlice = createSlice({
   },
 })
 
-export const { digitPressed, digitDeleted, cooldownExpired, signedOut } = authSlice.actions
+export { signedOut }
+export const { digitPressed, digitDeleted, cooldownExpired } = authSlice.actions
 export default authSlice.reducer

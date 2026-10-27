@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import {
   appendPinDigit,
+  cooldownDeadline,
   deletePinDigit,
   formatCountdown,
   isPinComplete,
@@ -95,5 +96,16 @@ describe('pinErrorLines', () => {
     expect(
       pinErrorLines({ attemptsLeft: 2, lock: { kind: 'locked' }, secondsRemaining: 0 })[0],
     ).toBe('Your PIN is locked.')
+  })
+})
+
+describe('cooldownDeadline', () => {
+  it('ends a cooldown that many seconds from now', () => {
+    expect(cooldownDeadline({ kind: 'cooldown', secondsRemaining: 60 }, 1000)).toBe(61_000)
+  })
+
+  it('is zero when there is no cooldown to wait out', () => {
+    expect(cooldownDeadline({ kind: 'locked' }, 1000)).toBe(0)
+    expect(cooldownDeadline(null, 1000)).toBe(0)
   })
 })

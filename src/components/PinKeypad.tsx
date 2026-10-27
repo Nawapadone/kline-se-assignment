@@ -11,6 +11,8 @@ interface PinKeypadProps {
   onDigit: (digit: string) => void
   onDelete: () => void
   disabled?: boolean
+  /** A PIN is being checked: presses are dropped, but the keys stay focusable. */
+  busy?: boolean
 }
 
 /**
@@ -20,7 +22,7 @@ interface PinKeypadProps {
  * also covers physical-keyboard entry (see `usePinKeyboard`), something a CSS
  * `:active` rule could never reach.
  */
-export function PinKeypad({ onDigit, onDelete, disabled = false }: PinKeypadProps) {
+export function PinKeypad({ onDigit, onDelete, disabled = false, busy = false }: PinKeypadProps) {
   const [pressed, setPressed] = useState<string | null>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -60,7 +62,7 @@ export function PinKeypad({ onDigit, onDelete, disabled = false }: PinKeypadProp
     `pin__key${extra}${pressed === key ? ' is-pressed' : ''}`
 
   return (
-    <div className="pin__keys">
+    <div className="pin__keys" aria-busy={busy}>
       {DIGITS.map(digit => (
         <button
           key={digit}

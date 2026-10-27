@@ -185,4 +185,12 @@ describe('authSlice', () => {
     const signedIn = reducer(initial, submitPin.fulfilled({ success: true }, '', '123456'))
     expect(reducer(signedIn, signedOut()).isAuthenticated).toBe(false)
   })
+
+  it('numbers every sign-in, and sign-out never reuses a number', () => {
+    const signIn = (state: typeof initial) =>
+      reducer(state, submitPin.fulfilled({ success: true }, '', '123456'))
+    const first = signIn(initial)
+    const second = signIn(reducer(first, signedOut()))
+    expect(second.session).toBeGreaterThan(first.session)
+  })
 })

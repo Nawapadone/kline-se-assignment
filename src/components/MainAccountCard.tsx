@@ -1,13 +1,15 @@
+import { useId } from 'react'
 import { t } from '@/i18n'
 import { accountIssuerLine, accountNumberLine, accountTitle } from '@/lib/account'
 import { formatAmount } from '@/lib/money'
 import type { Account } from '@/types'
 import { AccountMenu } from './AccountMenu'
+import { InertLink } from './InertLink'
 
 interface MainAccountCardProps {
   account: Account
   isMenuOpen: boolean
-  onToggleMenu: (event: React.MouseEvent) => void
+  onToggleMenu: () => void
   onCopyAccountNumber: () => void
   /** First-visit hint pointing at the action menu; bank_main.html ships its markup. */
   showCoachMark?: boolean
@@ -27,6 +29,7 @@ export function MainAccountCard({
   showCoachMark = false,
 }: MainAccountCardProps) {
   const issuerLine = accountIssuerLine(account)
+  const menuId = useId()
 
   return (
     <div
@@ -52,23 +55,29 @@ export function MainAccountCard({
         </div>
         <div className="main-acc__link__box" style={{ backgroundColor: account.color }}>
           <div className="main-acc__link__item">
-            <a href="#" className="main-acc__link main-acc__link--withdrawal">
+            <InertLink className="main-acc__link main-acc__link--withdrawal">
               {t('account.withdrawal')}
-            </a>
-            <a href="#" className="main-acc__link main-acc__link--qr">
+            </InertLink>
+            <InertLink className="main-acc__link main-acc__link--qr">
               {t('account.qrScan')}
-            </a>
-            <a href="#" className="main-acc__link main-acc__link--addmoney">
+            </InertLink>
+            <InertLink className="main-acc__link main-acc__link--addmoney">
               {t('account.addMoney')}
-            </a>
+            </InertLink>
           </div>
         </div>
       </div>
 
-      <button type="button" className="main-acc__more" onClick={onToggleMenu}>
-        <span className="blind">{t('account.moreAction')}</span>
+      <button
+        type="button"
+        className="main-acc__more"
+        aria-expanded={isMenuOpen}
+        aria-controls={menuId}
+        onClick={onToggleMenu}
+      >
+        <span className="blind">{t('account.moreActionFor', { account: accountTitle(account) })}</span>
       </button>
-      <AccountMenu isOpen={isMenuOpen} onCopyAccountNumber={onCopyAccountNumber} />
+      <AccountMenu id={menuId} isOpen={isMenuOpen} onCopyAccountNumber={onCopyAccountNumber} />
 
       {showCoachMark && !isMenuOpen && (
         <div

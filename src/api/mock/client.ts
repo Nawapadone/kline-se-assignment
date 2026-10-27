@@ -1,4 +1,3 @@
-import { env } from '@/config/env'
 import { MAX_PIN_ATTEMPTS } from '@/lib/pin'
 import type { Account, Banner, DebitCard, RecentTransaction, User } from '@/types'
 import type { ApiClient, VerifyPinPayload, VerifyPinResult } from '../types'
@@ -53,7 +52,7 @@ export class MockApiClient implements ApiClient {
    */
   constructor({ latencyMs, acceptedPin, now, persist = true }: MockApiOptions = {}) {
     this.latencyMs = latencyMs ?? DEFAULT_LATENCY_MS
-    this.acceptedPin = acceptedPin ?? env.demoPin
+    this.acceptedPin = acceptedPin ?? import.meta.env.VITE_DEMO_PIN ?? '123456'
     this.now = now ?? Date.now
     this.persist = persist
     this.lockout = persist ? readLockout() : { ...EMPTY_LOCKOUT }
@@ -104,6 +103,8 @@ export class MockApiClient implements ApiClient {
    */
   async verifyPin({ pin }: VerifyPinPayload): Promise<VerifyPinResult> {
     await this.delay()
+    // Another tab may have failed or cooled down since this client was built.
+    if (this.persist) this.lockout = readLockout(this.lockout)
 
     if (this.lockout.spentRounds > MAX_COOLDOWN_ROUNDS) {
       return { success: false, lock: { kind: 'locked' } }

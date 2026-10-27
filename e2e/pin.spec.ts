@@ -91,8 +91,11 @@ test.describe('PIN entry', () => {
   })
 
   test('a reload does not clear the block', async ({ page }) => {
+    // The keypad stays enabled during a check and ignores digits, so wait out each one.
     await tapPin(page, WRONG_PIN)
+    await expect(page.getByRole('alert')).toContainText('2 attempts left')
     await tapPin(page, WRONG_PIN)
+    await expect(page.getByRole('alert')).toContainText('1 attempt left')
     await tapPin(page, WRONG_PIN)
     await expect(page.getByRole('alert')).toContainText('Try again in')
 

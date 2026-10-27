@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { BsBank2 } from 'react-icons/bs'
 import { HiUser } from 'react-icons/hi2'
 
@@ -18,20 +18,19 @@ interface AvatarProps {
  * be unreachable. One fallback covers both.
  */
 export function Avatar({ src, alt = '', className, variant = 'person' }: AvatarProps) {
-  const [failed, setFailed] = useState(false)
-  const Icon = variant === 'bank' ? BsBank2 : HiUser
-
   /**
    * Lists here are keyed by position, so one slot can be reused for a different
-   * person after a reload. Without this the slot keeps the icon of the image
-   * that failed before, even though the new URL loads fine.
+   * person after a reload. Remembering which URL failed, rather than a flag,
+   * keeps the slot from showing the icon for a new URL that loads fine.
    */
-  useEffect(() => setFailed(false), [src])
+  const [failedSrc, setFailedSrc] = useState<string>()
+  const failed = failedSrc === src
+  const Icon = variant === 'bank' ? BsBank2 : HiUser
 
   return (
     <span className={className}>
       {src && !failed ? (
-        <img src={src} alt={alt} onError={() => setFailed(true)} />
+        <img src={src} alt={alt} onError={() => setFailedSrc(src)} />
       ) : (
         <Icon className="avatar__fallback" aria-hidden="true" />
       )}

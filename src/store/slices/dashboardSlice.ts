@@ -1,8 +1,9 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { apiClient } from '@/api'
 import { toErrorMessage } from '@/lib/load-error'
-import { GENERIC_ERROR } from '../createApiThunk'
 import type { Banner, DebitCard, RecentTransaction } from '@/types'
+import { signedOut } from '../actions'
+import { endSessionIfExpired, GENERIC_ERROR, sessionOf } from '../createApiThunk'
 import type { RequestStatus } from '../status'
 
 interface DashboardState {
@@ -12,6 +13,8 @@ interface DashboardState {
   status: RequestStatus
   /** Set when at least one list failed, even if the others arrived. */
   error: string | null
+  /** See accountsSlice: only the latest request's answer is stored. */
+  requestId: string | null
 }
 
 const initialState: DashboardState = {
@@ -20,6 +23,7 @@ const initialState: DashboardState = {
   banners: [],
   status: 'idle',
   error: null,
+  requestId: null,
 }
 
 /**
@@ -34,19 +38,21 @@ const initialState: DashboardState = {
 const asArray = <T,>(result: PromiseSettledResult<T[]>): T[] =>
   result.status === 'fulfilled' && Array.isArray(result.value) ? result.value : []
 
-export const fetchDashboard = createAsyncThunk('dashboard/fetch', async () => {
+export const fetchDashboard = createAsyncThunk('dashboard/fetch', async (_, { dispatch, getState }) => {
+  const startedIn = sessionOf(getState)
   const [transactions, cards, banners] = await Promise.allSettled([
     apiClient.getRecentTransactions(),
     apiClient.getDebitCards(),
     apiClient.getBanners(),
   ])
-  const failure = [transactions, cards, banners].find(result => result.status === 'rejected')
+  const failures = [transactions, cards, banners].filter(result => result.status === 'rejected')
+  for (const { reason } of failures) endSessionIfExpired(reason, dispatch, getState, startedIn)
 
   return {
     recentTransactions: asArray(transactions),
     debitCards: asArray(cards),
     banners: asArray(banners),
-    error: failure ? toErrorMessage(failure.reason) : null,
+    error: failures.length ? toErrorMessage(failures[0].reason) : null,
   }
 })
 
@@ -56,17 +62,23 @@ const dashboardSlice = createSlice({
   reducers: {},
   extraReducers: builder => {
     builder
-      .addCase(fetchDashboard.pending, state => {
+      .addCase(signedOut, () => initialState)
+      .addCase(fetchDashboard.pending, (state, action) => {
         state.status = 'loading'
+        state.requestId = action.meta.requestId
         state.error = null
       })
-      .addCase(fetchDashboard.rejected, state => {
+      .addCase(fetchDashboard.rejected, (state, action) => {
+        if (action.meta.requestId !== state.requestId) return
+        state.requestId = null
         // allSettled swallows every request failure, so only a bug in the thunk
         // body lands here — without this case the screen would wait forever.
         state.status = 'failed'
         state.error = GENERIC_ERROR
       })
       .addCase(fetchDashboard.fulfilled, (state, action) => {
+        if (action.meta.requestId !== state.requestId) return
+        state.requestId = null
         state.recentTransactions = action.payload.recentTransactions
         state.debitCards = action.payload.debitCards
         state.banners = action.payload.banners

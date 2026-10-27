@@ -108,6 +108,32 @@ test.describe('the accounts do not load', () => {
     await expect(page.getByRole('alert')).toContainText('The server is having trouble.')
   })
 
+  test('a 401 ends the session instead of reporting a failed load', async ({ page }) => {
+    await serveApi(page, { '/api/accounts': 401 })
+    // Signing in starts on /pin too, so wait for the refusal before asserting where it lands.
+    const refused = page.waitForResponse(response => response.url().endsWith('/api/accounts'))
+    await signInOverNetwork(page)
+    await refused
+
+    await expect(page).toHaveURL('/pin')
+    await expect(page.locator('.pin__keys')).toBeVisible()
+  })
+
+  test('a 401 on the profile is reported once, not refetched in a loop', async ({ page }) => {
+    let calls = 0
+    page.on('request', request => {
+      if (request.url().endsWith('/api/user')) calls++
+    })
+    await serveApi(page, { '/api/user': 401 })
+    await page.goto('/')
+
+    await expect(page.getByRole('alert')).toContainText('We could not load your data.')
+    // Settled means settled: no request after the failure is on screen.
+    const settled = calls
+    await page.waitForTimeout(1000)
+    expect(calls).toBe(settled)
+  })
+
   test('retrying brings the accounts back without a reload', async ({ page }) => {
     await serveApi(page, { '/api/accounts': 'abort' })
     await signInOverNetwork(page)

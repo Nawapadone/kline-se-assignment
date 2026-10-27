@@ -5,6 +5,8 @@ import type { ApiClient, VerifyPinPayload, VerifyPinResult } from './types'
 
 export { ApiError }
 
+const REQUEST_TIMEOUT_MS = 15_000
+
 /**
  * Talks to a real backend over the endpoints in api-specs.md. This project
  * ships no backend, so it is unreachable by default (`VITE_USE_MOCK` defaults to
@@ -15,6 +17,7 @@ export class RealApiClient implements ApiClient {
     const res = await fetch(`${env.apiBaseUrl}${path}`, {
       headers: { Accept: 'application/json' },
       credentials: 'include',
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     })
     if (!res.ok) throw new ApiError(res.status, path)
     return res.json() as Promise<T>
@@ -26,6 +29,7 @@ export class RealApiClient implements ApiClient {
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(body),
       credentials: 'include',
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     })
     if (!res.ok) throw new ApiError(res.status, path)
     return res.json() as Promise<T>
